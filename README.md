@@ -12,21 +12,6 @@ AI Code Assistant is a command-line tool built with Rust that integrates with th
 - [Rust](https://www.rust-lang.org/tools/install)
 - [Cargo](https://doc.rust-lang.org/cargo/)
 
-### Steps
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/yourusername/rust-ai-code-assistant.git
-   cd rust-ai-code-assistant
-   ```
-2. Install dependencies:
-   ```sh
-   cargo build
-   ```
-3. Run the project:
-   ```sh
-   cargo run
-   ```
-
 ## Usage
 1. Start the assistant:
    ```sh
