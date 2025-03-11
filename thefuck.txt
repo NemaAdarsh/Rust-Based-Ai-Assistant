@@ -1,0 +1,249 @@
+Welcome to AI Code Assistant! Type code and get AI suggestions.
+Type your code, then type 'END' on a new line to submit.
+>>> struct user {
+name: String,
+age: u32,
+}
+END
+
+AI Suggestion:
+struct user {
+name: String,
+age: u32,
+}
+
+struct entity {
+id: u32,
+name: String,
+user: user,
+related: entity?,
+}
+
+struct Table {
+id: u32,
+model: entity
+}
+
+enum HttpResponse {
+NoResponse,
+Checked,
+Timeout,
+}
+
+service MyService {
+@rpc(client_streaming=true)
+simple_action: ();
+
+@rpc(server_streaming=true)
+simple_query: () -> ();
+
+@rpc
+simple_fails: () -> bool;
+
+@rpc(client_streaming=true)
+simple_fails_bis: () -> bool;
+
+@rpc(server_streaming=true)
+multiple_parameters: (entity, entity) -> ();
+
+@rpc(respond_to="user_name")
+simple_respond_to_name: ();
+
+@rpc(respond_to="user_data")
+simple_respond_to_data: ();
+
+@rpc(respond_to="user_data", server_streaming=true)
+multiple_respond_to: () -> ();
+
+@rpc(client_streaming=true, respond_to="user_data")
+checked: () -> HttpResponse;
+
+@rpc(server_streaming=true, respond_to="user_data")
+echo: (entity) -> entity;
+}
+
+service Admin {
+@rpc
+table_add: (Table) -> u32;
+
+@rpc
+table_get: (u32) -> Table;
+}
+
+service Country {
+@rpc
+list_countries: () -> (Vec<String>);
+
+@rpc(client_streaming=true)
+count_by_country: (Vec<String>) -> (Vec<u32>);
+}
+
+struct ASerde {
+x: u64,
+y: u64,
+}
+
+service Serde {
+@rpc
+simple_serde: (ASerde) -> ASerde;
+}
+"##;
+
+    #[test]
+    fn it_works() {
+        assert_error(syn_error, INPUT);
+    }
+}
+
+mod mod {
+    syn_test! {
+        @single {
+            use super::Types;
+
+            type Test: Types + Default
+             = ();
+        }
+        @enums {
+            = ();
+        }
+        @structs {
+            = ();
+        }
+        @unions {
+            = ();
+        }
+        @unions {
+            = ();
+        }
+        @impl {
+            use super::registry::RegistryBase;
+        }
+    }
+}
+
+mod duplicate {
+    syn_test! {
+        @single {
+            use super::Types;
+            type Test: Types = ();
+        }
+        @single {
+            use super::Types;
+            type Test: Types = ();
+        }
+        @enums {
+            = ();
+        }
+        @structs {
+            = ();
+        }
+        @unions {
+            = ();
+        }
+        @weights {
+            = ();
+        }
+        @mod {
+            mod first {
+                syn_test::mod! {
+                    @single {
+                        type Child = ();
+                    }
+                }
+            }
+
+            mod second {
+                syn_test::mod! {
+                    @single {
+                        type Child = ();
+                    }
+                }
+            }
+        }
+    }
+}
+
+mod wrong_path {
+    syn_test! {
+        @mod {
+            mod first {
+                mod second {
+                    syn_test::mod! {
+                        @single {
+                            type Child = ();
+                        }
+                        @enums {
+                            @multiple_impl_block {
+                                use super::super::other_mod;
+                            }
+                        }
+                    }
+                }
+            }
+
+            use super::registry::RegistryBase;
+        }
+
+        @enums {
+            @multiple_impl_block {
+                use super::other_mod;
+            }
+        }
+    }
+}
+
+mod notify_fork {
+    syn_test! {
+        @mod {
+            use std::os::unix::io::IntoRawFd;
+            use std::os::unix::io::FromRawFd;
+
+            use super::trait_fork::ForkNotify;
+
+            struct Secret {
+                cur_listeners: RefCell<Vec<&'static mut dyn ForkNotify>>,
+            }
+
+            trait ForkNotify {}
+
+            enum SecretFriend {}
+
+            impl ForkNotify for SecretFriend {}
+        }
+    }
+}
+
+pub mod trait_fork {
+    syn_test! {
+        @single {
+            use super::Types;
+
+            pub trait Fork: Types + Sized + Default
+             {
+                fn fork(&mut self, have_lock: bool) -> Result<Self, str> {
+                    Ok(Self::default())
+                }
+            }
+        }
+        @mod {
+            use super::registry::RegistryBase;
+        }
+    }
+}
+
+syn_test! {
+    @single {
+        pub trait Clone<T> {
+            fn clone(&self) -> T;
+        }
+    }
+    @single {
+        pub trait ControlFlow {
+            fn branch() -> u32;
+            fn loop_(counter: i32) -> u32;
+        }
+    }
+    @mod {
+        use super::registry::RegistryBase;
+    }
+}
